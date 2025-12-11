@@ -1,0 +1,6 @@
+requests>=2.31.0
+ntplib>=0.4.0
+pytz>=2024.1
+urllib3>=2.1.0
+icmplib>=3.0.4
+colorama>=0.4.6
