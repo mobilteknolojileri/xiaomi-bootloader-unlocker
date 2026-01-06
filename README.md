@@ -1,8 +1,6 @@
 # Xiaomi Bootloader Unlocker
 
 ![Python](https://img.shields.io/badge/Python-3.7+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge)
 [![GitHub Stars](https://img.shields.io/github/stars/mobilteknolojileri/xiaomi-bootloader-unlocker?style=for-the-badge&logo=github)](https://github.com/mobilteknolojileri/xiaomi-bootloader-unlocker/stargazers)
 
 > 🚀 Automated Xiaomi bootloader unlock application tool with NTP time sync and millisecond precision.
