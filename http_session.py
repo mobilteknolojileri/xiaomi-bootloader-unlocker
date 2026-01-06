@@ -1,7 +1,17 @@
+"""
+HTTP session management module.
+Provides HTTP/1.1 session with connection pooling.
+"""
+
+from typing import Optional, Dict
 import urllib3
 
+
 class HTTP11Session:
-    def __init__(self):
+    """HTTP/1.1 session with connection pooling for efficient requests."""
+    
+    def __init__(self) -> None:
+        """Initialize the HTTP session with connection pool."""
         self.http = urllib3.PoolManager(
             maxsize=10,
             retries=True,
@@ -9,7 +19,25 @@ class HTTP11Session:
             headers={}
         )
 
-    def make_request(self, method, url, headers=None, body=None):
+    def make_request(
+        self,
+        method: str,
+        url: str,
+        headers: Optional[Dict[str, str]] = None,
+        body: Optional[bytes] = None
+    ) -> Optional[urllib3.HTTPResponse]:
+        """
+        Make an HTTP request.
+        
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            url: The request URL.
+            headers: Optional request headers.
+            body: Optional request body.
+            
+        Returns:
+            HTTPResponse if successful, None if failed.
+        """
         try:
             request_headers = {}
             if headers:
@@ -33,6 +61,9 @@ class HTTP11Session:
             )
             
             return response
+        except urllib3.exceptions.HTTPError as e:
+            print(f"[Network Error] HTTP request failed: {e}")
+            return None
         except Exception as e:
-            print(f"[Ağ hatası] {e}")
+            print(f"[Network Error] {e}")
             return None

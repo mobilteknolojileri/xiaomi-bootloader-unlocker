@@ -1,9 +1,28 @@
+"""
+Status checker module.
+Checks the current unlock status of the user's account.
+"""
+
 import json
 from colorama import Fore
 
+from http_session import HTTP11Session
+
 STATUS_CHECK_URL = "https://sgp-api.buy.mi.com/bbs/api/global/user/bl-switch/state"
 
-def check_unlock_status(session, cookie_value, device_id):
+
+def check_unlock_status(session: HTTP11Session, cookie_value: str, device_id: str) -> bool:
+    """
+    Check the current bootloader unlock status.
+    
+    Args:
+        session: The HTTP session instance.
+        cookie_value: The authentication cookie.
+        device_id: The generated device ID.
+        
+    Returns:
+        bool: True if ready to proceed, False otherwise.
+    """
     try:
         headers = {
             "Cookie": f"new_bbs_serviceToken={cookie_value};versionCode=500411;versionName=5.4.11;deviceId={device_id};"
@@ -12,15 +31,16 @@ def check_unlock_status(session, cookie_value, device_id):
         response = session.make_request('GET', STATUS_CHECK_URL, headers=headers)
         
         if response is None:
-            print(f"[Hata] Kilit açma durumu alınamadı.")
+            print(Fore.RED + "[Error] " + Fore.WHITE + "Could not retrieve unlock status.")
             return False
 
         response_data = json.loads(response.data.decode('utf-8'))
         response.release_conn()
 
+        # Check for expired session
         if response_data.get("code") == 100004:
-            print(f"[Hata] Cookie süresi doldu, güncellenmesi gerekiyor!")
-            input(f"Kapatmak için Enter tuşuna basın...")
+            print(Fore.RED + "[Error] " + Fore.WHITE + "Session expired. Please login again.")
+            input("\nPress Enter to exit...")
             exit()
 
         data = response_data.get("data", {})
@@ -30,36 +50,39 @@ def check_unlock_status(session, cookie_value, device_id):
 
         if is_pass == 4:
             if button_state == 1:
-                print(Fore.GREEN + f"[Hesap durumu]: " + Fore.RESET + f"başvuru yapılabilir.")
+                print(Fore.GREEN + "[Account] " + Fore.WHITE + "Ready to apply for unlock.")
                 return True
 
             elif button_state == 2:
-                print(Fore.GREEN + f"[Hesap durumu]: " + Fore.RESET + f"başvuru engeli {deadline_format} (Ay/Gün) tarihine kadar.")
-                status_response = input(f"Devam etmek ister misiniz (" + Fore.BLUE + f"Evet/Hayır" + Fore.RESET + f")?: ")
-                if status_response.lower() in ['e', 'evet', 'y', 'yes']:
+                print(Fore.YELLOW + "[Account] " + Fore.WHITE + f"Application blocked until {deadline_format}.")
+                response = input(f"Do you want to continue anyway? (" + Fore.CYAN + "yes/no" + Fore.RESET + "): ")
+                if response.lower() in ['y', 'yes']:
                     return True
                 else:
-                    input(f"Kapatmak için Enter tuşuna basın...")
+                    input("\nPress Enter to exit...")
                     exit()
                     
             elif button_state == 3:
-                print(Fore.GREEN + f"[Hesap durumu]: " + Fore.RESET + f"hesap 30 günden daha yeni oluşturulmuş.")
-                status_response = input(f"Devam etmek ister misiniz (" + Fore.BLUE + f"Evet/Hayır" + Fore.RESET + f")?: ")
-                if status_response.lower() in ['e', 'evet', 'y', 'yes']:
+                print(Fore.YELLOW + "[Account] " + Fore.WHITE + "Account is newer than 30 days.")
+                response = input(f"Do you want to continue anyway? (" + Fore.CYAN + "yes/no" + Fore.RESET + "): ")
+                if response.lower() in ['y', 'yes']:
                     return True
                 else:
-                    input(f"Kapatmak için Enter tuşuna basın...")
+                    input("\nPress Enter to exit...")
                     exit()
                     
         elif is_pass == 1:
-            print(Fore.GREEN + f"[Hesap durumu]: " + Fore.RESET + f"başvuru onaylandı, {deadline_format} tarihine kadar kilit açılabilir.")
-            input(f"Kapatmak için Enter tuşuna basın...")
+            print(Fore.GREEN + "[Account] " + Fore.WHITE + f"Already approved! Can unlock until {deadline_format}.")
+            input("\nPress Enter to exit...")
             exit()
         else:
-            print(Fore.GREEN + f"[Hesap durumu]: " + Fore.RESET + f"bilinmeyen durum.")
-            input(f"Kapatmak için Enter tuşuna basın...")
+            print(Fore.YELLOW + "[Account] " + Fore.WHITE + "Unknown account status.")
+            input("\nPress Enter to exit...")
             exit()
             
+    except json.JSONDecodeError as e:
+        print(Fore.RED + f"[Error] " + Fore.WHITE + f"Failed to parse status response: {e}")
+        return False
     except Exception as e:
-        print(f"[Durum kontrol hatası] {e}")
+        print(Fore.RED + f"[Error] " + Fore.WHITE + f"Status check failed: {e}")
         return False
