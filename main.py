@@ -40,6 +40,10 @@ Examples:
 def main() -> None:
     """Main entry point for the application."""
     args = parse_arguments()
+    
+    from logger import setup_logging
+    log_path = setup_logging()
+    print(f"📝 Log dosyası: {log_path}\n")
 
     from auth import authenticate_user
     from config import get_feed_time_configuration, DEFAULT_FEED_TIME_MS
@@ -62,3 +66,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n\n[Exit] Operation cancelled by user.")
         sys.exit(0)
+
