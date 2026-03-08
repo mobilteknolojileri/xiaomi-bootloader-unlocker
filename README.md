@@ -1,24 +1,23 @@
 # Xiaomi Bootloader Unlocker
 
-![Python](https://img.shields.io/badge/Python-3.7+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-[![GitHub Stars](https://img.shields.io/github/stars/mobilteknolojileri/xiaomi-bootloader-unlocker?style=for-the-badge&logo=github)](https://github.com/mobilteknolojileri/xiaomi-bootloader-unlocker/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/mobilteknolojileri/xiaomi-bootloader-unlocker?style=flat-square)](https://github.com/mobilteknolojileri/xiaomi-bootloader-unlocker/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-> 🚀 Automated Xiaomi bootloader unlock application tool with NTP time sync and millisecond precision.
+Xiaomi limits bootloader unlock applications to a fixed daily quota (commonly reported as around 2,000). The quota resets at midnight Beijing time (UTC+8). This tool fires **10 parallel requests** at that reset moment to improve your chances of getting a slot.
 
-## ⚡ Features
+Log in, set your delay, and walk away. The tool handles the rest.
 
-- 🔐 **Xiaomi Account Authentication** - Secure login with your Xiaomi credentials
-- ⏱️ **NTP Time Synchronization** - Accurate Beijing time sync for precise application timing
-- 🎯 **Millisecond Precision** - Submit unlock applications at the exact right moment
-- 🔄 **Automatic Retry** - Handles network errors and retries automatically
-- 📊 **Status Checking** - Monitors your unlock application status in real-time
+---
 
-## 📋 Requirements
+## What does it do?
 
-- Python 3.7+
-- Xiaomi account with bootloader unlock eligibility
+- Logs into your Xiaomi account
+- Checks if your account is eligible
+- Syncs Beijing time from NTP servers (doesn't rely on your system clock)
+- At the right moment, sends **10 threaded requests** simultaneously
+- Saves everything to `logs/` for debugging
 
-## 🚀 Installation
+## Setup
 
 ```bash
 git clone https://github.com/mobilteknolojileri/xiaomi-bootloader-unlocker.git
@@ -26,53 +25,112 @@ cd xiaomi-bootloader-unlocker
 pip install -r requirements.txt
 ```
 
-## 💻 Usage
-
-### Interactive Mode
+## Usage
 
 ```bash
 python main.py
 ```
 
-### CLI Mode (Advanced)
+It will ask for:
+1. Xiaomi account (email or phone)
+2. Password
+3. Delay in ms — press Enter for default (888ms)
+
+You can also pass the delay directly:
 
 ```bash
-# Use custom delay
 python main.py --delay 888
-python main.py -d 500
-
-# Show help
-python main.py --help
 ```
 
-### Steps
+### When to run
 
-1. Enter your Xiaomi account credentials (email/phone and password)
-2. Set the delay time in milliseconds (default: 888 ms) or press Enter for default
-3. The tool will sync with Beijing time and submit your application at the optimal moment
+Figure out when midnight Beijing time is in your timezone, then start the script 2–5 minutes early:
 
-## ⚙️ How It Works
+| Region | Start at | Beijing midnight |
+|---|---|---|
+| Turkey (UTC+3) | 18:55 | 19:00 |
+| Germany (UTC+1) | 16:55 | 17:00 |
+| UK (UTC+0) | 15:55 | 16:00 |
+| India (UTC+5:30) | 21:25 | 21:30 |
+| US East (UTC-5) | 10:55 | 11:00 |
 
-The tool synchronizes with NTP servers to get accurate Beijing time (UTC+8), then submits your bootloader unlock application just before midnight. This timing strategy helps maximize the chances of a successful application.
+### What delay should I use?
 
-### Delay Configuration
+These are rough starting points based on community experience. Check your latency first:
 
-- **Default delay**: 888 ms before midnight
-- The application is sent at `23:59:59.XXX` where XXX = 1000 - delay
-- Example: 200 ms delay = application sent at 23:59:59.800
+```bash
+ping sgp-api.buy.mi.com
+```
 
-## ⚠️ Disclaimer
+| Ping | Suggested delay |
+|---|---|
+| Under 300ms | `888` (good starting point) |
+| 300–500ms | `~1500` |
+| Over 500ms | `~3500` |
 
-This tool is for educational purposes only. Use at your own risk. The developers are not responsible for any issues that may arise from using this tool.
+## How it works
 
-## 📄 License
+```
+Login → Status check → NTP sync → Wait → BURST (10 requests) → Done
+```
 
-MIT License - See [LICENSE](LICENSE) for details.
+1. Authenticates with Xiaomi's API and grabs a session token
+2. Verifies your account can actually apply
+3. Pulls accurate Beijing time from 7 NTP servers
+4. Waits until the configured time before midnight
+5. Spawns 10 threads, each sending `POST /apply/bl-auth` (200ms apart)
+6. Prints results to terminal and writes them to a log file
 
-## 🤝 Contributing
+## After approval
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Once you get approved (process may vary by device/region):
 
-## ⭐ Show Your Support
+1. Wait for the cooling period (typically **72 hours**, can vary)
+2. Download **Mi Unlock Tool** on PC
+3. Boot your phone into fastboot (power + volume down)
+4. Connect via USB and unlock through Mi Unlock Tool
 
-If this project helped you, please give it a star!
+## Project structure
+
+```
+├── main.py            # Entry point, CLI args
+├── auth.py            # Xiaomi account login
+├── bootloader.py      # BURST mode, 10 threaded requests
+├── config.py          # Delay settings
+├── device.py          # Device ID generation
+├── http_session.py    # HTTP connection pooling
+├── status_checker.py  # Account eligibility check
+├── time_sync.py       # NTP time synchronization
+├── logger.py          # Terminal + file logging
+└── logs/              # Auto-generated session logs
+```
+
+## FAQ
+
+**Does it work on mobile?**
+Yes, with Pydroid 3 on Android. But PC gives better timing accuracy — use that if you can.
+
+**Will I get banned?**
+10 requests over 2 seconds is fairly mild. No bans reported so far, but there are no guarantees.
+
+**First attempt failed, what now?**
+Try again next day. Bump the delay up a bit (try 1500ms). The quota fills fast.
+
+**Does it work with 2FA enabled?**
+No. You need to temporarily disable 2FA for the login to work.
+
+## Disclaimer
+
+This tool is for educational purposes only. Use at your own risk. The developer is not responsible for any issues that may arise from using this tool.
+
+## License
+
+[MIT](LICENSE)
+
+## Contributing
+
+Pull requests and issues are welcome.
+
+---
+
+If this helped you, drop a ⭐ so others can find it too.
