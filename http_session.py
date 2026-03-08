@@ -13,8 +13,8 @@ class HTTP11Session:
     def __init__(self) -> None:
         """Initialize the HTTP session with connection pool."""
         self.http = urllib3.PoolManager(
-            maxsize=10,
-            retries=True,
+            maxsize=20,
+            retries=False,
             timeout=urllib3.Timeout(connect=2.0, read=15.0),
             headers={}
         )
@@ -61,9 +61,7 @@ class HTTP11Session:
             )
             
             return response
-        except urllib3.exceptions.HTTPError as e:
-            print(f"[Network Error] HTTP request failed: {e}")
+        except urllib3.exceptions.HTTPError:
             return None
-        except Exception as e:
-            print(f"[Network Error] {e}")
+        except Exception:
             return None
