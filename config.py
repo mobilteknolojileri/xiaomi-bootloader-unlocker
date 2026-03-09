@@ -2,7 +2,7 @@
 Configuration module for feed time settings.
 """
 
-DEFAULT_FEED_TIME_MS = 888
+DEFAULT_FEED_TIME_MS = 100
 
 
 def get_feed_time_configuration() -> float:
