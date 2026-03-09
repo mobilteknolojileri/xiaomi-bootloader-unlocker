@@ -3,7 +3,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/mobilteknolojileri/xiaomi-bootloader-unlocker?style=flat-square)](https://github.com/mobilteknolojileri/xiaomi-bootloader-unlocker/stargazers)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-Xiaomi limits bootloader unlock applications to a fixed daily quota (commonly reported as around 2,000). The quota resets at midnight Beijing time (UTC+8). This tool fires **10 parallel requests** at that reset moment to improve your chances of getting a slot.
+Xiaomi limits bootloader unlock applications to a fixed daily quota (commonly reported as around 2,000). The quota resets at midnight Beijing time (UTC+8). This tool fires **30 parallel requests** at that reset moment to improve your chances of getting a slot.
 
 Log in, set your delay, and walk away. The tool handles the rest.
 
@@ -14,7 +14,7 @@ Log in, set your delay, and walk away. The tool handles the rest.
 - Logs into your Xiaomi account
 - Checks if your account is eligible
 - Syncs Beijing time from NTP servers (doesn't rely on your system clock)
-- At the right moment, sends **10 threaded requests** simultaneously
+- At the right moment, sends **30 threaded requests** simultaneously
 - Saves everything to `logs/` for debugging
 
 ## Setup
@@ -34,12 +34,12 @@ python main.py
 It will ask for:
 1. Xiaomi account (email or phone)
 2. Password
-3. Delay in ms — press Enter for default (888ms)
+3. Delay in ms — press Enter for default (100ms)
 
 You can also pass the delay directly:
 
 ```bash
-python main.py --delay 888
+python main.py --delay 100
 ```
 
 ### When to run
@@ -64,21 +64,21 @@ ping sgp-api.buy.mi.com
 
 | Ping | Suggested delay |
 |---|---|
-| Under 300ms | `888` (good starting point) |
-| 300–500ms | `~1500` |
-| Over 500ms | `~3500` |
+| Under 100ms | `100` (optimized default) |
+| 100–300ms | `300–800` |
+| Over 300ms | `1000+` |
 
 ## How it works
 
 ```
-Login → Status check → NTP sync → Wait → BURST (10 requests) → Done
+Login → Status check → NTP sync → Wait → BURST (30 requests in ~450ms) → Done
 ```
 
 1. Authenticates with Xiaomi's API and grabs a session token
 2. Verifies your account can actually apply
 3. Pulls accurate Beijing time from 7 NTP servers
 4. Waits until the configured time before midnight
-5. Spawns 10 threads, each sending `POST /apply/bl-auth` (200ms apart)
+5. Spawns 30 threads, each sending `POST /apply/bl-auth` (15ms apart)
 6. Prints results to terminal and writes them to a log file
 
 ## After approval
@@ -111,7 +111,7 @@ Once you get approved (process may vary by device/region):
 Yes, with Pydroid 3 on Android. But PC gives better timing accuracy — use that if you can.
 
 **Will I get banned?**
-10 requests over 2 seconds is fairly mild. No bans reported so far, but there are no guarantees.
+30 requests in under 0.5 seconds is aggressive but focused on a single moment in the day. To minimize risk, the script only runs the burst once. No bans have been reported for this level of activity during the global reset window, but proceed with caution.
 
 **First attempt failed, what now?**
 Try again next day. Bump the delay up a bit (try 1500ms). The quota fills fast.
