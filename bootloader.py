@@ -17,8 +17,8 @@ from time_sync import get_initial_beijing_time, get_synchronized_beijing_time, w
 init(autoreset=True)
 
 APPLY_URL = "https://sgp-api.buy.mi.com/bbs/api/global/apply/bl-auth"
-BURST_COUNT = 10
-BURST_INTERVAL = 0.2  # seconds between each thread
+BURST_COUNT = 30
+BURST_INTERVAL = 0.015  # seconds between each thread (15ms)
 
 
 def print_header() -> None:
