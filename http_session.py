@@ -13,7 +13,7 @@ class HTTP11Session:
     def __init__(self) -> None:
         """Initialize the HTTP session with connection pool."""
         self.http = urllib3.PoolManager(
-            maxsize=20,
+            maxsize=100,
             retries=False,
             timeout=urllib3.Timeout(connect=2.0, read=15.0),
             headers={}
