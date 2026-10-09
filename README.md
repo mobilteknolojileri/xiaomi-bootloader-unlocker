@@ -95,7 +95,7 @@ Once you get approved (process may vary by device/region):
 ```
 ├── main.py            # Entry point, CLI args
 ├── auth.py            # Xiaomi account login
-├── bootloader.py      # BURST mode, 10 threaded requests
+├── bootloader.py      # BURST mode, 30 threaded requests
 ├── config.py          # Delay settings
 ├── device.py          # Device ID generation
 ├── http_session.py    # HTTP connection pooling

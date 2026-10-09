@@ -25,7 +25,7 @@ def print_header() -> None:
     """Print the application header."""
     print(Style.BRIGHT + Fore.CYAN + "=" * 60)
     print(Style.BRIGHT + Fore.CYAN + "        Xiaomi Bootloader Unlock Tool")
-    print(Style.BRIGHT + Fore.CYAN + "           BURST MODE - 10 Threads")
+    print(Style.BRIGHT + Fore.CYAN + f"           BURST MODE - {BURST_COUNT} Threads")
     print(Style.BRIGHT + Fore.CYAN + "=" * 60 + Style.RESET_ALL)
     print()
 
